@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: LoginTest
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 1, Errors: 0, Skipped: 2, Time elapsed: 7.331 s <<< FAILURE! -- in LoginTest
-LoginTest.setup -- Time elapsed: 6.840 s <<< FAILURE!
+Tests run: 3, Failures: 1, Errors: 0, Skipped: 2, Time elapsed: 6.914 s <<< FAILURE! -- in LoginTest
+LoginTest.setup -- Time elapsed: 6.457 s <<< FAILURE!
 org.openqa.selenium.SessionNotCreatedException: 
 Could not start a new session. Possible causes are invalid address of the remote server or browser start-up failure. 
 Host info: host: 'idx-selenium-java-testng-pom-1743317471042', ip: '10.88.0.3'

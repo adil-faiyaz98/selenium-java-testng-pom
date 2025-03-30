@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="OrangeHRM Test Suite" parallel="methods" thread-count="4">
+    <test name="Login Tests">
+        <classes>
+            <class name="com.example.tests.LoginTest"/>
+            <!-- Add more login-related test classes here -->
+        </classes>
+    </test>
+    <test name="Dashboard Tests">
+        <classes>
+            <!-- Add test classes for Dashboard functionality here -->
+        </classes>
+    </test>
+    <test name="Admin Page Tests">
+        <classes>
+            <!-- Add test classes for Admin Page functionality here -->
+        </classes>
+    </test>
+    <test name="PIM Page Tests">
+        <classes>
+            <!-- Add test classes for PIM Page functionality here -->
+        </classes>
+    </test>
+    <test name="Leave Management Tests">
+        <classes>
+            <!-- Add test classes for Leave Management functionality here -->
+        </classes>
+    </test>
+    <test name="Recruitment Tests">
+        <classes>
+            <!-- Add test classes for Recruitment functionality here -->
+        </classes>
+    </test>
+    <test name="Performance Tests">
+        <classes>
+            <!-- Add test classes for Performance functionality here -->
+        </classes>
+    </test>
+    <test name="Security Tests">
+        <classes>
+            <!-- Add test classes for Security functionality here -->
+        </classes>
+    </test>
+    <test name="Smoke Tests">
+        <classes>
+            <!-- Add test classes for Smoke Tests here -->
+        </classes>
+    </test>
+    <test name="Regression Tests">
+        <classes>
+            <!-- Add test classes for Regression Tests here -->
+        </classes>
+    </test>
+</suite>

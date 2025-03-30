@@ -1,0 +1,48 @@
+name: OrangeHRM Automation Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  # Or another runner OS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'  # Or another distribution
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run tests
+        run: $(which mvn) test  # Dynamically find mvn executable
+
+      - name: Generate Allure Report (if applicable)
+        # Add steps to generate Allure report if you're using it
+        # Example (adjust based on your setup):
+        # run: mvn allure:report
+
+      - name: Upload Test Reports and Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            target/surefire-reports/  # For TestNG default reports
+            allure-report/            # If using Allure
+            screenshots/
+            logs/
+          retention-days: 5

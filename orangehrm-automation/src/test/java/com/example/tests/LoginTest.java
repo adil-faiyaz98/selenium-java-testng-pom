@@ -1,72 +1,75 @@
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
+package com.example.tests;
+
+import com.example.config.ConfigReader;
+import com.example.pages.DashboardPage;
+import com.example.pages.LoginPage;
+import com.example.utils.ScreenshotUtils;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.openqa.selenium.By;
 
-public class LoginTest {
+public class LoginTest extends BaseTest {
 
-    private WebDriver driver;
-    private LoginPage loginPage;
+    @Test
+    public void testSuccessfulLogin() {
+        logger.info("Starting test: testSuccessfulLogin");
+        try {
+            LoginPage loginPage = new LoginPage(driver);
+            String username = ConfigReader.getProperty("username");
+            String password = ConfigReader.getProperty("password");
 
-    @BeforeMethod
-    public void setup() {
-        // Initialize ChromeDriver
-        driver = new ChromeDriver();
-        // Initialize LoginPage
-        loginPage = new LoginPage(driver);
+            loginPage.enterUsername(username);
+            loginPage.enterPassword(password);
+            loginPage.clickLoginButton();
+
+            Assert.assertTrue(driver.getCurrentUrl().contains("/dashboard"), "Login failed: URL does not contain '/dashboard'");
+            logger.info("Finished test: testSuccessfulLogin");
+
+        } catch (Exception e) {
+            logger.error("Test failed: " + e.getMessage(), e);
+            ScreenshotUtils.takeScreenshot(driver, "LoginTest_testSuccessfulLogin_failed.png");
+            Assert.fail("Test failed: " + e.getMessage());
+        }
     }
 
     @Test
-    public void testLogin() {
-        // Navigate to the login page
-        driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login");
+    public void testInvalidLogin() {
+        logger.info("Starting test: testInvalidLogin");
+        try {
+            LoginPage loginPage = new LoginPage(driver);
+            String invalidUsername = ConfigReader.getProperty("invalidUsername");
+            String invalidPassword = ConfigReader.getProperty("invalidPassword");
 
-        // Enter username
-        loginPage.enterUsername("Admin");
+            if (invalidUsername == null) invalidUsername = "invalidUser";
+            if (invalidPassword == null) invalidPassword = "invalidPass";
+            
+            loginPage.enterUsername(invalidUsername);
+            loginPage.enterPassword(invalidPassword);
+            loginPage.clickLoginButton();
 
-        // Enter password
-        loginPage.enterPassword("admin123");
-
-        // Click the login button
-        loginPage.clickLoginButton();
-
-        // Assert that the current URL contains '/dashboard'
-        Assert.assertTrue(driver.getCurrentUrl().contains("/dashboard"), "Login failed: URL does not contain '/dashboard'");
-    }
-
-    @AfterMethod
-    public void teardown() {
-        // Close the WebDriver
-        if (driver != null) {
-            driver.quit();
+            Assert.assertTrue(driver.findElement(By.cssSelector(".oxd-alert-content-text")).getText().contains("Invalid credentials"));
+            logger.info("Finished test: testInvalidLogin");
+        } catch (Exception e) {
+            logger.error("Test failed: " + e.getMessage(), e);
+            ScreenshotUtils.takeScreenshot(driver, "LoginTest_testInvalidLogin_failed.png");
+            Assert.fail("Test failed: " + e.getMessage());
         }
     }
 
-    // LoginPage class (You can put this in a separate file if needed)
-    private static class LoginPage {
-        private WebDriver driver;
+    @Test
+    public void testNoCredentialsLogin() {
+        logger.info("Starting test: testNoCredentialsLogin");
+        try {
+            LoginPage loginPage = new LoginPage(driver);
 
-        public LoginPage(WebDriver driver) {
-            this.driver = driver;
-        }
+            loginPage.clickLoginButton();
 
-        public void enterUsername(String username) {
-            WebElement usernameField = driver.findElement(By.name("username"));
-            usernameField.sendKeys(username);
-        }
-
-        public void enterPassword(String password) {
-            WebElement passwordField = driver.findElement(By.name("password"));
-            passwordField.sendKeys(password);
-        }
-
-        public void clickLoginButton() {
-            WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
-            loginButton.click();
+            Assert.assertTrue(driver.findElement(By.cssSelector(".oxd-alert-content-text")).getText().contains("Invalid credentials"));
+            logger.info("Finished test: testNoCredentialsLogin");
+        } catch (Exception e) {
+            logger.error("Test failed: " + e.getMessage(), e);
+            ScreenshotUtils.takeScreenshot(driver, "LoginTest_testNoCredentialsLogin_failed.png");
+            Assert.fail("Test failed: " + e.getMessage());
         }
     }
 }
