@@ -1,0 +1,28 @@
+{
+  "validUsers": [
+    {
+      "username": "Admin",
+      "password": "admin123",
+      "role": "Admin",
+      "status": "Enabled"
+    },
+    {
+      "username": "TestUser",
+      "password": "test123",
+      "role": "ESS",
+      "status": "Enabled"
+    }
+  ],
+  "invalidUsers": [
+    {
+      "username": "invalidUser",
+      "password": "invalidPass",
+      "errorMessage": "Invalid credentials"
+    },
+    {
+      "username": "",
+      "password": "",
+      "errorMessage": "Invalid credentials"
+    }
+  ]
+}

@@ -5,10 +5,22 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
+  workflow_dispatch:     # Allow manual triggering
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest  # Or another runner OS
+  test-matrix:
+    name: Test on ${{ matrix.os }} with ${{ matrix.browser }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        browser: [chrome, firefox]
+        include:
+          - os: windows-latest
+            browser: edge
 
     steps:
       - name: Checkout code
@@ -18,31 +30,68 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'  # Or another distribution
+          distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+      - name: Set up Chrome
+        if: matrix.browser == 'chrome'
+        uses: browser-actions/setup-chrome@latest
+
+      - name: Set up Firefox
+        if: matrix.browser == 'firefox'
+        uses: browser-actions/setup-firefox@latest
+
+      - name: Set up Edge
+        if: matrix.browser == 'edge'
+        uses: browser-actions/setup-edge@latest
 
       - name: Run tests
-        run: $(which mvn) test  # Dynamically find mvn executable
+        run: mvn test -Dbrowser=${{ matrix.browser }} -Denvironment=staging
 
-      - name: Generate Allure Report (if applicable)
-        # Add steps to generate Allure report if you're using it
-        # Example (adjust based on your setup):
-        # run: mvn allure:report
+      - name: Generate Allure Report
+        if: always()
+        run: mvn allure:report
 
       - name: Upload Test Reports and Artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}
           path: |
-            target/surefire-reports/  # For TestNG default reports
-            allure-report/            # If using Allure
+            target/surefire-reports/
+            target/allure-results/
+            allure-report/
             screenshots/
             logs/
-          retention-days: 5
+          retention-days: 14
+
+  notify:
+    name: Notify test results
+    needs: test-matrix
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: artifacts/**/target/surefire-reports/TEST-*.xml
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        if: always()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: test-results
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: Test Results
+          SLACK_MESSAGE: 'Test run completed with status: ${{ job.status }}'
+          SLACK_FOOTER: 'OrangeHRM Automation Tests'

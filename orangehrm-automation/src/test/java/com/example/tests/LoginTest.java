@@ -1,75 +1,117 @@
 package com.example.tests;
 
 import com.example.config.ConfigReader;
+import com.example.config.Constants;
 import com.example.pages.DashboardPage;
-import com.example.pages.LoginPage;
-import com.example.utils.ScreenshotUtils;
+import com.example.utils.WaitUtils;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.openqa.selenium.By;
 
+/**
+ * Tests for the login functionality.
+ */
 public class LoginTest extends BaseTest {
 
-    @Test
+    /**
+     * Tests successful login with valid credentials.
+     */
+    @Test(priority = 1, description = "Verify successful login with valid credentials")
     public void testSuccessfulLogin() {
-        logger.info("Starting test: testSuccessfulLogin");
-        try {
-            LoginPage loginPage = new LoginPage(driver);
-            String username = ConfigReader.getProperty("username");
-            String password = ConfigReader.getProperty("password");
+        logger.info("Testing successful login");
 
-            loginPage.enterUsername(username);
-            loginPage.enterPassword(password);
-            loginPage.clickLoginButton();
+        // Get credentials from configuration
+        String username = ConfigReader.getProperty("username", Constants.DEFAULT_USERNAME);
+        String password = ConfigReader.getProperty("password", Constants.DEFAULT_PASSWORD);
 
-            Assert.assertTrue(driver.getCurrentUrl().contains("/dashboard"), "Login failed: URL does not contain '/dashboard'");
-            logger.info("Finished test: testSuccessfulLogin");
+        // Perform login
+        DashboardPage dashboardPage = loginPage.login(username, password);
 
-        } catch (Exception e) {
-            logger.error("Test failed: " + e.getMessage(), e);
-            ScreenshotUtils.takeScreenshot(driver, "LoginTest_testSuccessfulLogin_failed.png");
-            Assert.fail("Test failed: " + e.getMessage());
-        }
+        // Verify login was successful
+        WaitUtils.waitForUrlContains(driver, "/dashboard", Constants.DEFAULT_TIMEOUT);
+        Assert.assertTrue(driver.getCurrentUrl().contains("/dashboard"),
+                "Login failed: URL does not contain '/dashboard'");
+        Assert.assertTrue(dashboardPage.isAdminMenuPresent(),
+                "Dashboard page not loaded correctly: Admin menu not present");
     }
 
-    @Test
+    /**
+     * Tests login with invalid credentials.
+     */
+    @Test(priority = 2, description = "Verify error message with invalid credentials")
     public void testInvalidLogin() {
-        logger.info("Starting test: testInvalidLogin");
-        try {
-            LoginPage loginPage = new LoginPage(driver);
-            String invalidUsername = ConfigReader.getProperty("invalidUsername");
-            String invalidPassword = ConfigReader.getProperty("invalidPassword");
+        logger.info("Testing invalid login");
 
-            if (invalidUsername == null) invalidUsername = "invalidUser";
-            if (invalidPassword == null) invalidPassword = "invalidPass";
-            
-            loginPage.enterUsername(invalidUsername);
-            loginPage.enterPassword(invalidPassword);
-            loginPage.clickLoginButton();
+        // Get invalid credentials from configuration or use defaults
+        String invalidUsername = ConfigReader.getProperty("invalidUsername", "invalidUser");
+        String invalidPassword = ConfigReader.getProperty("invalidPassword", "invalidPass");
 
-            Assert.assertTrue(driver.findElement(By.cssSelector(".oxd-alert-content-text")).getText().contains("Invalid credentials"));
-            logger.info("Finished test: testInvalidLogin");
-        } catch (Exception e) {
-            logger.error("Test failed: " + e.getMessage(), e);
-            ScreenshotUtils.takeScreenshot(driver, "LoginTest_testInvalidLogin_failed.png");
-            Assert.fail("Test failed: " + e.getMessage());
-        }
+        // Perform login with invalid credentials
+        loginPage.enterUsername(invalidUsername)
+                 .enterPassword(invalidPassword)
+                 .clickLoginButton();
+
+        // Verify error message
+        String errorMessage = loginPage.getErrorMessage();
+        Assert.assertTrue(errorMessage.contains("Invalid credentials"),
+                "Expected error message not displayed. Actual message: " + errorMessage);
     }
 
-    @Test
+    /**
+     * Tests login with no credentials.
+     */
+    @Test(priority = 3, description = "Verify error message with no credentials")
     public void testNoCredentialsLogin() {
-        logger.info("Starting test: testNoCredentialsLogin");
-        try {
-            LoginPage loginPage = new LoginPage(driver);
+        logger.info("Testing login with no credentials");
 
-            loginPage.clickLoginButton();
+        // Click login without entering credentials
+        loginPage.clickLoginButton();
 
-            Assert.assertTrue(driver.findElement(By.cssSelector(".oxd-alert-content-text")).getText().contains("Invalid credentials"));
-            logger.info("Finished test: testNoCredentialsLogin");
-        } catch (Exception e) {
-            logger.error("Test failed: " + e.getMessage(), e);
-            ScreenshotUtils.takeScreenshot(driver, "LoginTest_testNoCredentialsLogin_failed.png");
-            Assert.fail("Test failed: " + e.getMessage());
+        // Verify error message
+        String errorMessage = loginPage.getErrorMessage();
+        Assert.assertTrue(errorMessage.contains("Invalid credentials"),
+                "Expected error message not displayed. Actual message: " + errorMessage);
+    }
+
+    /**
+     * Data provider for login tests with different credentials.
+     * @return Array of test data
+     */
+    @DataProvider(name = "loginCredentials")
+    public Object[][] provideLoginCredentials() {
+        return new Object[][] {
+            {Constants.DEFAULT_USERNAME, Constants.DEFAULT_PASSWORD, true, null},  // Valid credentials
+            {"invalidUser", "invalidPass", false, "Invalid credentials"},         // Invalid credentials
+            {"", "", false, "Invalid credentials"}                                // Empty credentials
+        };
+    }
+
+    /**
+     * Tests login with different credentials using data provider.
+     * @param username The username
+     * @param password The password
+     * @param shouldSucceed Whether the login should succeed
+     * @param expectedError The expected error message if login should fail
+     */
+    @Test(dataProvider = "loginCredentials", priority = 4, description = "Verify login with different credentials")
+    public void testLoginWithDifferentCredentials(String username, String password, boolean shouldSucceed, String expectedError) {
+        logger.info("Testing login with credentials: {} / {}", username, password);
+
+        // Perform login
+        loginPage.enterUsername(username)
+                 .enterPassword(password)
+                 .clickLoginButton();
+
+        if (shouldSucceed) {
+            // Verify successful login
+            WaitUtils.waitForUrlContains(driver, "/dashboard", Constants.DEFAULT_TIMEOUT);
+            Assert.assertTrue(driver.getCurrentUrl().contains("/dashboard"),
+                    "Login should have succeeded but failed");
+        } else {
+            // Verify error message
+            String errorMessage = loginPage.getErrorMessage();
+            Assert.assertEquals(errorMessage, expectedError,
+                    "Expected error message not displayed");
         }
     }
 }

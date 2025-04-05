@@ -1,55 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="OrangeHRM Test Suite" parallel="methods" thread-count="4">
-    <test name="Login Tests">
+<suite name="OrangeHRM Test Suite" parallel="tests" thread-count="2" data-provider-thread-count="3">
+    <!-- Global Parameters -->
+    <parameter name="browser" value="chrome"/>
+    <parameter name="environment" value="staging"/>
+    <parameter name="retryCount" value="2"/>
+
+    <!-- Listeners -->
+    <listeners>
+        <listener class-name="com.example.listeners.TestListener"/>
+        <listener class-name="com.example.listeners.RetryListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
+    <!-- Functional Test Groups -->
+    <test name="Authentication Tests" parallel="methods" thread-count="2">
         <classes>
             <class name="com.example.tests.LoginTest"/>
-            <!-- Add more login-related test classes here -->
+            <class name="com.example.tests.DataDrivenLoginTest"/>
+            <class name="com.example.tests.AIBasedLoginTest"/>
         </classes>
     </test>
-    <test name="Dashboard Tests">
+
+    <test name="Dashboard Tests" parallel="methods" thread-count="2">
         <classes>
-            <!-- Add test classes for Dashboard functionality here -->
+            <!-- Uncomment when implemented -->
+            <!-- <class name="com.example.tests.DashboardTest"/> -->
         </classes>
     </test>
-    <test name="Admin Page Tests">
+
+    <test name="Admin Module Tests" parallel="methods" thread-count="2">
         <classes>
-            <!-- Add test classes for Admin Page functionality here -->
+            <!-- Uncomment when implemented -->
+            <!-- <class name="com.example.tests.AdminUserManagementTest"/> -->
+            <!-- <class name="com.example.tests.AdminJobTest"/> -->
+            <!-- <class name="com.example.tests.AdminOrganizationTest"/> -->
         </classes>
     </test>
-    <test name="PIM Page Tests">
+
+    <test name="PIM Module Tests" parallel="methods" thread-count="2">
         <classes>
-            <!-- Add test classes for PIM Page functionality here -->
+            <!-- Uncomment when implemented -->
+            <!-- <class name="com.example.tests.PIMEmployeeListTest"/> -->
+            <!-- <class name="com.example.tests.PIMAddEmployeeTest"/> -->
+            <!-- <class name="com.example.tests.PIMReportsTest"/> -->
         </classes>
     </test>
-    <test name="Leave Management Tests">
+
+    <test name="Leave Module Tests" parallel="methods" thread-count="2">
         <classes>
-            <!-- Add test classes for Leave Management functionality here -->
+            <!-- Uncomment when implemented -->
+            <!-- <class name="com.example.tests.LeaveRequestTest"/> -->
+            <!-- <class name="com.example.tests.LeaveEntitlementTest"/> -->
         </classes>
     </test>
-    <test name="Recruitment Tests">
+
+    <!-- Test Types -->
+    <test name="Smoke Tests" parallel="methods" thread-count="2">
+        <groups>
+            <run>
+                <include name="smoke"/>
+            </run>
+        </groups>
         <classes>
-            <!-- Add test classes for Recruitment functionality here -->
+            <class name="com.example.tests.LoginTest"/>
+            <!-- Add more classes that contain smoke tests -->
         </classes>
     </test>
-    <test name="Performance Tests">
+
+    <test name="Regression Tests" parallel="methods" thread-count="2">
+        <groups>
+            <run>
+                <include name="regression"/>
+            </run>
+        </groups>
         <classes>
-            <!-- Add test classes for Performance functionality here -->
-        </classes>
-    </test>
-    <test name="Security Tests">
-        <classes>
-            <!-- Add test classes for Security functionality here -->
-        </classes>
-    </test>
-    <test name="Smoke Tests">
-        <classes>
-            <!-- Add test classes for Smoke Tests here -->
-        </classes>
-    </test>
-    <test name="Regression Tests">
-        <classes>
-            <!-- Add test classes for Regression Tests here -->
+            <class name="com.example.tests.LoginTest"/>
+            <class name="com.example.tests.DataDrivenLoginTest"/>
+            <!-- Add more classes that contain regression tests -->
         </classes>
     </test>
 </suite>

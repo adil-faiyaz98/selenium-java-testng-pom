@@ -22,10 +22,14 @@ public class DashboardPage {
         return new AdminPage(driver);
     }
 
+    /**
+     * Navigates to the PIM page.
+     * @return The PIM page object
+     */
     public PIMPage navigateToPIMPage() {
-        WebElement PIMLink = driver.findElement(By.xpath("//a[@href='/web/index.php/pim/viewPimModule']"));
-        PIMLink.click();
-        return new AdminPage(driver);
+        WebElement pimLink = driver.findElement(By.xpath("//a[@href='/web/index.php/pim/viewPimModule']"));
+        pimLink.click();
+        return new PIMPage(driver);
     }
 
     public boolean isAdminMenuPresent() {

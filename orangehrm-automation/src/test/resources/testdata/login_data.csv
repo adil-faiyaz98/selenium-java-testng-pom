@@ -1,0 +1,5 @@
+username,password,shouldSucceed,errorMessage
+Admin,admin123,true,
+invalidUser,invalidPass,false,Invalid credentials
+,,false,Invalid credentials
+TestUser,test123,true,

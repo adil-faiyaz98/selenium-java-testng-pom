@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'OrangeHRM Automation Test Infrastructure'
+
+Resources:
+  TestExecutionCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: automation-test-cluster
+
+  TestTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: automation-tests
+      RequiresCompatibilities:
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '2048'
+      Memory: '4096'
+      ContainerDefinitions:
+        - Name: test-container
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/orangehrm-automation:latest
+          Essential: true
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/automation-tests
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  TestResultsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub orangehrm-test-results-${AWS::AccountId}
+      VersioningConfiguration:
+        Status: Enabled
